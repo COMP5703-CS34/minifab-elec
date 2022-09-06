@@ -1,6 +1,6 @@
 # minifab-elec
 
-This is for user-defiend network on local machine.
+This is for user-defined network on local machine.
 
 ##  Test Environment
 
@@ -16,7 +16,7 @@ Ubuntu 20.04 server
 
    Wait for the minifab to bring up the network.
 
-3. Check it with 
+3. Check it with `docker ps`. There should be multiple mirrors showing peers, channels, chaincodes.
 
 ## Useful resources
 
