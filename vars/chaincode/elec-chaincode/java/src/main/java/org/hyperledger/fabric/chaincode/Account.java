@@ -13,9 +13,9 @@ public class Account {
 
     private Account() {}
 
-    public String getAccountId(
+    public String getAccountId() {
         return accountId;
-    )
+    }
 
     public Double getElecAmount() {
         return elecAmount;
