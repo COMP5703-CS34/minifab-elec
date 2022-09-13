@@ -32,12 +32,12 @@ public class AccountBasedChaincode extends ChaincodeBase {
             String account1Key = args.get(0);
             int account1ElecAmount = Integer.parseInt(args.get(1));
             int account1Balance = Integer.parseInt(args.get(2));
-            Account account1 = Account(account1Key, account1ElecAmount, account1Balance);
+            Account account1 = new Account(account1Key, account1ElecAmount, account1Balance);
 
             String account2Key = args.get(3);
             int account2ElecAmount = Integer.parseInt(args.get(4));
             int account2Balance = Integer.parseInt(args.get(5));
-            Account account2 = Account(account2Key, account2ElecAmount, account2Balance);
+            Account account2 = new Account(account2Key, account2ElecAmount, account2Balance);
 
             _logger.info(String.format("account %s, elec = %d, balance = %d; account %s, elec = %d, balance = %d", 
                                 account1Key, account1ElecAmount, account1Balance, 
@@ -82,30 +82,30 @@ public class AccountBasedChaincode extends ChaincodeBase {
         // Parse parameters
         String fromAccountKey = args.get(0);
         String toAccountKey = args.get(1);
-        int transferredAmount = Integer.parseInt(args.get(2);
+        int transferredAmount = Integer.parseInt(args.get(2));
         int elecPrice = Integer.parseInt(args.get(3));
 
         String fromAccountStr = stub.getStringState(fromAccountKey);
         if (fromAccountStr == null) {
-            return newErrorResponse(String.format("Entity %s not found", accountFromKey));
+            return newErrorResponse(String.format("Entity %s not found", fromAccountKey));
         }
 
         String toAccountStr = stub.getStringState(toAccountKey);
         if (toAccountStr == null) {
-            return newErrorResponse(String.format("Entity %s not found", accountToKey));
+            return newErrorResponse(String.format("Entity %s not found", toAccountKey));
         }
 
         ObjectMapper mapper = new ObjectMapper();
         Account fromAccount = mapper.readValue(fromAccountStr, Account.class);
         Account toAccount = mapper.readValue(toAccountStr, Account.class);
 
-        int fromAccountElecAmount = fromAccount.elecAmount;
-        int fromAccountBalance = fromAccount.balance;
-        int toAccountElecAmount = toAccount.elecAmount;
-        int toAccountBalance = toAccount.balance;
+        int fromAccountElecAmount = fromAccount.getElecAmount();
+        int fromAccountBalance = fromAccount.getBalance();
+        int toAccountElecAmount = toAccount.getElecAmount();
+        int toAccountBalance = toAccount.getBalance();
 
         if (transferredAmount * elecPrice > fromAccountBalance) {
-            return newErrorResponse(String.format("not enough money in account %s", accountFromKey));
+            return newErrorResponse(String.format("not enough money in account %s", fromAccountKey));
         }
 
         fromAccountElecAmount -= transferredAmount;
@@ -121,7 +121,8 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         _logger.info("Transfer complete");
 
-        return newSuccessResponse("transfer finished successfully", ByteString.copyFrom(accountFromKey + ": " + accountFromValue + " " + accountToKey + ": " + accountToValue, UTF_8).toByteArray());
+        return newSuccessResponse("transfer finished successfully");
+        //, ByteString.copyFrom(fromAccountKey + ": " + accountFromValue + " " + accountToKey + ": " + accountToValue, UTF_8).toByteArray());
     }
 
     // Deletes an entity from state
@@ -143,15 +144,15 @@ public class AccountBasedChaincode extends ChaincodeBase {
             return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query");
         }
         String key = args.get(0);
-        String accountStr	= stub.getStringState(key);
+        String accountStr = stub.getStringState(key);
 
         ObjectMapper mapper = new ObjectMapper();
         Account account = mapper.readValue(accountStr, Account.class);
         
-        if (val == null) {
+        if (accountStr == null) {
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
-        _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance\n", key, account.elecAmount, acconut.balance));
+        _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance\n", key, account.getElecAmount(), account.balance()));
         return newSuccessResponse();
     }
 

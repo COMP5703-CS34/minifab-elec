@@ -2,10 +2,10 @@ package org.hyperledger.fabric.chaincode;
 
 public class Account {
     private String accountId;
-    private Double elecAmount;
-    private Double balance;
+    private int elecAmount;
+    private int balance;
     
-    public Account(String accountId, Double elecAmount, Double balance) {
+    public Account(String accountId, int elecAmount, int balance) {
         this.accountId = accountId;
         this.elecAmount = elecAmount;
         this.balance = balance;
@@ -21,15 +21,15 @@ public class Account {
         return elecAmount;
     }
 
-    public Double getElecAmount() {
-        return elecAmount;
+    public Double getBalance() {
+        return balance;
     }
 
-    public void setElecAmount(String elecAmount) {
+    public void setElecAmount(int elecAmount) {
         this.elecAmount = elecAmount;
     }
 
-    public void setBalance(String balance) {
+    public void setBalance(int balance) {
         this.balance = balance;
     }
 }
