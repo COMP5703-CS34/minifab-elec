@@ -157,7 +157,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
     public static void main(String[] args) {
         System.out.println("OpenSSL avaliable: " + OpenSsl.isAvailable());
-        new SimpleChaincode().start(args);
+        new AccountBasedChaincode().start(args);
     }
 
 }
