@@ -73,7 +73,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
     // Make a Trasfer
     // Transfer format: {accountFrom, accountTo, transferredAmount, elecPrice}
     private Response transfer(ChaincodeStub stub, List<String> args) {
-        if (args.size() != 3) {
+        if (args.size() != 4) {
             return newErrorResponse("Incorrect number of arguments. Expecting 4");
         }
         // Parse parameters
@@ -145,12 +145,14 @@ public class AccountBasedChaincode extends ChaincodeBase {
             return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query");
         }
         String key = args.get(0);
-        byte[] accountBytes = stub.getState(key);
 
-        Account account = (Account)Utility.toObject(accountBytes);
+        byte[] accountBytes = stub.getState(key);
         if (accountBytes == null) {
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
+
+        Account account = (Account)Utility.toObject(accountBytes);
+
         _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance: %d\n", key, account.getElecAmount(), account.getBalance()));
         return newSuccessResponse();
     }
