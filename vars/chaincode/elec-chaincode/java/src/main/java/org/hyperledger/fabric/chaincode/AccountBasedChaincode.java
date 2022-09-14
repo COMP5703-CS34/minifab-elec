@@ -113,6 +113,11 @@ public class AccountBasedChaincode extends ChaincodeBase {
         fromAccountBalance += transferredAmount * elecPrice;
         toAccountBalance -= transferredAmount * elecPrice;
 
+        fromAccount.setElecAmount(fromAccountElecAmount);
+        toAccount.setElecAmount(toAccountElecAmount);
+        fromAccount.setBalance(fromAccountBalance);
+        toAccount.setBalance(toAccountBalance);
+
         _logger.info(String.format("new status of %s: %d %d", fromAccountKey, fromAccountElecAmount, fromAccountBalance));
         _logger.info(String.format("new status of %s: %d %d", toAccountKey, toAccountElecAmount, toAccountBalance));
 
