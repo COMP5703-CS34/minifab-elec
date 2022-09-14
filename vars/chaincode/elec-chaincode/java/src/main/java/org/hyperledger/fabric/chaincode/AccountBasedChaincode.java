@@ -1,19 +1,12 @@
 package org.hyperledger.fabric.chaincode;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.protobuf.ByteString;
 import io.netty.handler.ssl.OpenSsl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hyperledger.fabric.shim.ChaincodeBase;
 import org.hyperledger.fabric.shim.ChaincodeStub;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class AccountBasedChaincode extends ChaincodeBase {
 
