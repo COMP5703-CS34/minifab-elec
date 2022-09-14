@@ -1,7 +1,9 @@
 package org.hyperledger.fabric.chaincode;
 
+import java.io.IOException;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.protobuf.ByteString;
 import io.netty.handler.ssl.OpenSsl;
 import org.apache.commons.logging.Log;
@@ -99,10 +101,12 @@ public class AccountBasedChaincode extends ChaincodeBase {
             return newErrorResponse(String.format("Entity %s not found", toAccountKey));
         }
 
+        Account fromAccount;
+        Account toAccount;
         ObjectMapper mapper = new ObjectMapper();
         try {
-            Account fromAccount = mapper.readValue(fromAccountStr, Account.class);
-            Account toAccount = mapper.readValue(toAccountStr, Account.class);
+            fromAccount = mapper.readValue(fromAccountStr, Account.class);
+            toAccount = mapper.readValue(toAccountStr, Account.class);
         } catch (IOException e) {
             return newErrorResponse(e);
         }
@@ -166,15 +170,14 @@ public class AccountBasedChaincode extends ChaincodeBase {
         ObjectMapper mapper = new ObjectMapper();
         try {
             Account account = mapper.readValue(accountStr, Account.class);
+            if (accountStr == null) {
+                return newErrorResponse(String.format("Error: state for %s is null", key));
+            }
+            _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance: %d\n", key, account.getElecAmount(), account.getBalance()));
+            return newSuccessResponse();
         } catch (IOException e) {
             return newErrorResponse(e);
         }
-
-        if (accountStr == null) {
-            return newErrorResponse(String.format("Error: state for %s is null", key));
-        }
-        _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance: %d\n", key, account.getElecAmount(), account.getBalance()));
-        return newSuccessResponse();
     }
 
     public static void main(String[] args) {
