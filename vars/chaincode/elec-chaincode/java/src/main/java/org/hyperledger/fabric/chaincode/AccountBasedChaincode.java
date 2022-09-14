@@ -43,9 +43,13 @@ public class AccountBasedChaincode extends ChaincodeBase {
                                 account1Key, account1ElecAmount, account1Balance, 
                                 account2Key, account2ElecAmount, account2Balance));
 
-            stub.putState(account1Key, (new ObjectMapper()).writeValueAsBytes(account1));
-            stub.putState(account2Key, (new ObjectMapper()).writeValueAsBytes(account2));
-
+            try {
+                stub.putState(account1Key, (new ObjectMapper()).writeValueAsBytes(account1));
+                stub.putState(account2Key, (new ObjectMapper()).writeValueAsBytes(account2));
+            } catch (IOException e) {
+                return newErrorResponse(e);
+            }
+            
             return newSuccessResponse();
         } catch (Throwable e) {
             return newErrorResponse(e);
@@ -96,15 +100,19 @@ public class AccountBasedChaincode extends ChaincodeBase {
         }
 
         ObjectMapper mapper = new ObjectMapper();
-        Account fromAccount = mapper.readValue(fromAccountStr, Account.class);
-        Account toAccount = mapper.readValue(toAccountStr, Account.class);
+        try {
+            Account fromAccount = mapper.readValue(fromAccountStr, Account.class);
+            Account toAccount = mapper.readValue(toAccountStr, Account.class);
+        } catch (IOException e) {
+            return newErrorResponse(e);
+        }
 
         int fromAccountElecAmount = fromAccount.getElecAmount();
         int fromAccountBalance = fromAccount.getBalance();
         int toAccountElecAmount = toAccount.getElecAmount();
         int toAccountBalance = toAccount.getBalance();
 
-        if (transferredAmount * elecPrice > fromAccountBalance) {
+        if (transferredAmount > fromAccountElecAmount) {
             return newErrorResponse(String.format("not enough money in account %s", fromAccountKey));
         }
 
@@ -121,8 +129,12 @@ public class AccountBasedChaincode extends ChaincodeBase {
         _logger.info(String.format("new status of %s: %d %d", fromAccountKey, fromAccountElecAmount, fromAccountBalance));
         _logger.info(String.format("new status of %s: %d %d", toAccountKey, toAccountElecAmount, toAccountBalance));
 
-        stub.putState(fromAccountKey, mapper.writeValueAsBytes(fromAccount));
-        stub.putState(toAccountKey, mapper.writeValueAsBytes(toAccount));
+        try {
+            stub.putState(fromAccountKey, mapper.writeValueAsBytes(fromAccount));
+            stub.putState(toAccountKey, mapper.writeValueAsBytes(toAccount));
+        } catch (JsonProcessingException e) {
+            return newErrorResponse(e);
+        }
 
         _logger.info("Transfer complete");
 
@@ -152,8 +164,12 @@ public class AccountBasedChaincode extends ChaincodeBase {
         String accountStr = stub.getStringState(key);
 
         ObjectMapper mapper = new ObjectMapper();
-        Account account = mapper.readValue(accountStr, Account.class);
-        
+        try {
+            Account account = mapper.readValue(accountStr, Account.class);
+        } catch (IOException e) {
+            return newErrorResponse(e);
+        }
+
         if (accountStr == null) {
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
