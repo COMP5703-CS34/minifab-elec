@@ -152,7 +152,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         if (accountStr == null) {
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
-        _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance\n", key, account.getElecAmount(), account.balance()));
+        _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance: %d\n", key, account.getElecAmount(), account.getBalance()));
         return newSuccessResponse();
     }
 

@@ -17,11 +17,11 @@ public class Account {
         return accountId;
     }
 
-    public Double getElecAmount() {
+    public int getElecAmount() {
         return elecAmount;
     }
 
-    public Double getBalance() {
+    public int getBalance() {
         return balance;
     }
 
