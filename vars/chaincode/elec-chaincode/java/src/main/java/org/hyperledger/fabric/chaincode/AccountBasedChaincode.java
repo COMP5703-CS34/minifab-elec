@@ -1,6 +1,7 @@
 package org.hyperledger.fabric.chaincode;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,13 +46,10 @@ public class AccountBasedChaincode extends ChaincodeBase {
                                 account1Key, account1ElecAmount, account1Balance, 
                                 account2Key, account2ElecAmount, account2Balance));
 
-            try {
-                stub.putState(account1Key, (new ObjectMapper()).writeValueAsBytes(account1));
-                stub.putState(account2Key, (new ObjectMapper()).writeValueAsBytes(account2));
-            } catch (IOException e) {
-                return newErrorResponse(e);
-            }
-            
+
+            stub.putState(account1Key, Utility.toByteArray(account1));
+            stub.putState(account2Key, Utility.toByteArray(account2));
+
             return newSuccessResponse();
         } catch (Throwable e) {
             return newErrorResponse(e);
@@ -91,25 +89,18 @@ public class AccountBasedChaincode extends ChaincodeBase {
         int transferredAmount = Integer.parseInt(args.get(2));
         int elecPrice = Integer.parseInt(args.get(3));
 
-        String fromAccountStr = stub.getStringState(fromAccountKey);
-        if (fromAccountStr == null) {
+        byte[] fromAccountBytes = stub.getState(fromAccountKey);
+        if (fromAccountBytes == null) {
             return newErrorResponse(String.format("Entity %s not found", fromAccountKey));
         }
 
-        String toAccountStr = stub.getStringState(toAccountKey);
-        if (toAccountStr == null) {
+        byte[] toAccountBytes = stub.getState(toAccountKey);
+        if (toAccountBytes == null) {
             return newErrorResponse(String.format("Entity %s not found", toAccountKey));
         }
 
-        Account fromAccount;
-        Account toAccount;
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            fromAccount = mapper.readValue(fromAccountStr, Account.class);
-            toAccount = mapper.readValue(toAccountStr, Account.class);
-        } catch (IOException e) {
-            return newErrorResponse(e);
-        }
+        Account fromAccount = (Account)Utility.toObject(fromAccountBytes);;
+        Account toAccount = (Account)Utility.toObject(toAccountBytes);
 
         int fromAccountElecAmount = fromAccount.getElecAmount();
         int fromAccountBalance = fromAccount.getBalance();
@@ -133,12 +124,8 @@ public class AccountBasedChaincode extends ChaincodeBase {
         _logger.info(String.format("new status of %s: %d %d", fromAccountKey, fromAccountElecAmount, fromAccountBalance));
         _logger.info(String.format("new status of %s: %d %d", toAccountKey, toAccountElecAmount, toAccountBalance));
 
-        try {
-            stub.putState(fromAccountKey, mapper.writeValueAsBytes(fromAccount));
-            stub.putState(toAccountKey, mapper.writeValueAsBytes(toAccount));
-        } catch (JsonProcessingException e) {
-            return newErrorResponse(e);
-        }
+        stub.putState(fromAccountKey, Utility.toByteArray(fromAccount));
+        stub.putState(toAccountKey, Utility.toByteArray(toAccount));
 
         _logger.info("Transfer complete");
 
@@ -165,24 +152,18 @@ public class AccountBasedChaincode extends ChaincodeBase {
             return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query");
         }
         String key = args.get(0);
-        String accountStr = stub.getStringState(key);
+        byte[] accountBytes = stub.getState(key);
 
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            Account account = mapper.readValue(accountStr, Account.class);
-            if (accountStr == null) {
-                return newErrorResponse(String.format("Error: state for %s is null", key));
-            }
-            _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance: %d\n", key, account.getElecAmount(), account.getBalance()));
-            return newSuccessResponse();
-        } catch (IOException e) {
-            return newErrorResponse(e);
+        Account account = (Account)Utility.toObject(accountBytes);
+        if (accountBytes == null) {
+            return newErrorResponse(String.format("Error: state for %s is null", key));
         }
+        _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance: %d\n", key, account.getElecAmount(), account.getBalance()));
+        return newSuccessResponse();
     }
 
     public static void main(String[] args) {
         System.out.println("OpenSSL avaliable: " + OpenSsl.isAvailable());
         new AccountBasedChaincode().start(args);
     }
-
 }

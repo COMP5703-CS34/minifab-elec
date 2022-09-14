@@ -1,6 +1,8 @@
 package org.hyperledger.fabric.chaincode;
 
-public class Account {
+import java.io.Serializable;
+
+public class Account implements Serializable {
     private String accountId;
     private int elecAmount;
     private int balance;
