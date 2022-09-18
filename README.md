@@ -10,15 +10,20 @@ OS: Ubuntu 20.04 server
 
 ## Tutorials
 
-1. Install prerequisites: docker and go env;
+1. Install prerequisites: docker: 
+
+   ```bash
+   sudo apt install docker
+   sudo apt install docker-compose
+   ```
 
 2. Bring up the network:  `sudo ./minifab netup -o stateA.elec.com -i 2.1`
 
-   Note that there are compatibility problems on the newest fabric release. Use 2.1 instead.
+3. Commit our chaincode to the network: 
 
-3. Check it with `docker ps`. There should be multiple mirrors showing peers, channels, chaincodes.
-
-4. Commit our chaincode to the network: `sudo ./minifab ccup -n elec-chaincode -l java -v 1.0 -p '"init","Plant","10000","500000","Home","10","100"'`
+   ```Bash
+   sudo ./minifab up -o stateA.elec.com -i 2.1 -n elec-chaincode -l java -v 1.0 -d true -p '"init","Plant","10000","500000","Home","10","100"'
+   ```
 
 ## Useful resources
 
