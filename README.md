@@ -17,8 +17,6 @@ OS: Ubuntu 20.04 server
    sudo apt install docker-compose
    ```
 
-2. Bring up the network:  `sudo ./minifab netup -o stateA.elec.com -i 2.1`
-
 3. Commit our chaincode to the network: 
 
    ```Bash
