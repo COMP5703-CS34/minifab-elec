@@ -154,7 +154,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         Account account = (Account)Utility.toObject(accountBytes);
 
         _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance: %d\n", key, account.getElecAmount(), account.getBalance()));
-        return newSuccessResponse();
+        return newSuccessResponse("Query Success", accountBytes);
     }
 
     public static void main(String[] args) {
