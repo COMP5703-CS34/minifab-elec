@@ -20,7 +20,7 @@ OS: Ubuntu 20.04 server
 3. Commit our chaincode to the network: 
 
    ```Bash
-   sudo ./minifab up -o stateA.elec.com -i 2.1 -n elec-chaincode -l java -v 1.0 -d true -p '"init","Plant","10000","500000","Home","10","100"'
+   sudo ./minifab up -o stateA.elec.com -i 2.1 -n elec-chaincode -l java -v 1.0 -d true -e true -p '"init","Plant","10000","500000","Home","10","100"'
    ```
 
 ## Useful resources
