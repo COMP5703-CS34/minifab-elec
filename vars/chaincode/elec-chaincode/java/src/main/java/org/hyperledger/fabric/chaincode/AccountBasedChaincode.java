@@ -190,8 +190,12 @@ public class AccountBasedChaincode extends ChaincodeBase {
         queryResultsIterator.forEach(keyModification -> {
             Map<String, Object> map = new LinkedHashMap<>();
             map.put("transactionId", keyModification.getTxId());
-            map.put("timestamp", keyModification. getTimestamp().toString());
-            map.put("value", keyModification.getStringValue());
+            map.put("timestamp", keyModification.getTimestamp().toString());
+            Account account = (Account) Utility.toObject(keyModification.getValue());
+            map.put("value",
+                    "accountId" + account.getAccountId()
+                  + "elecAmount" + account.getElecAmount()
+                  + "balance" + account.getBalance());
             map.put("isDeleted", keyModification.isDeleted());
             jsonArray.put(map);
         });
