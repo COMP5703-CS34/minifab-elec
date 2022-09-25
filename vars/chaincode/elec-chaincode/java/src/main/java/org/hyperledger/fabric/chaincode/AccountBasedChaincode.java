@@ -1,5 +1,6 @@
 package org.hyperledger.fabric.chaincode;
 
+import java.util.Iterator;
 import java.util.List;
 
 import io.netty.handler.ssl.OpenSsl;
@@ -7,6 +8,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hyperledger.fabric.shim.ChaincodeBase;
 import org.hyperledger.fabric.shim.ChaincodeStub;
+import org.hyperledger.fabric.shim.ledger.KeyModification;
+import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 
 public class AccountBasedChaincode extends ChaincodeBase {
 
@@ -63,6 +66,9 @@ public class AccountBasedChaincode extends ChaincodeBase {
             }
             if (func.equals("query")) {
                 return query(stub, params);
+            }
+            if (func.equals("queryHistory")){
+                return queryHistory(stub, params);
             }
             return newErrorResponse("Invalid invoke function name. Expecting one of: [\"invoke\", \"delete\", \"query\"]");
         } catch (Throwable e) {
@@ -155,6 +161,38 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance: %d\n", key, account.getElecAmount(), account.getBalance()));
         return newSuccessResponse("Query Success", accountBytes);
+    }
+
+    // Query the history by key
+    // Query history format: {queryID}
+    private Response queryHistory(ChaincodeStub stub, List<String> args){
+        // Check the number of arguments
+        if (args.size() != 1){
+            return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query");
+        }
+        String key = args.get(0);
+
+        if (stub.getState(key) == null){
+            return newErrorResponse(String.format("Error: state for %s is null", key));
+        }
+
+        // Get history
+        QueryResultsIterator<KeyModification> queryResult = stub.getHistoryForKey(key);
+
+        StringBuilder history = new StringBuilder();
+
+        Iterator<KeyModification> iter = queryResult.iterator();
+
+        while (iter.hasNext()){
+            history.append(iter.next().getStringValue());
+        }
+
+        // Export history to the log
+        _logger.info(history);
+
+        String message = String.format("Query History Success:\n %s", history);
+
+        return newSuccessResponse(message);
     }
 
     public static void main(String[] args) {
