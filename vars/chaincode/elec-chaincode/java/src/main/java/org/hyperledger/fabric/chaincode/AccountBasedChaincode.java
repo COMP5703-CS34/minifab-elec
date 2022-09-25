@@ -1,8 +1,14 @@
 package org.hyperledger.fabric.chaincode;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import io.netty.handler.ssl.OpenSsl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -78,6 +84,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
     // Make a Trasfer
     // Transfer format: {accountFrom, accountTo, transferredAmount, elecPrice}
+    // electricity flows from accountFrom to accountTo
     private Response transfer(ChaincodeStub stub, List<String> args) {
         if (args.size() != 4) {
             return newErrorResponse("Incorrect number of arguments. Expecting 4");
@@ -177,22 +184,27 @@ public class AccountBasedChaincode extends ChaincodeBase {
         }
 
         // Get history
-        QueryResultsIterator<KeyModification> queryResult = stub.getHistoryForKey(key);
+        QueryResultsIterator<KeyModification> queryResultsIterator = stub.getHistoryForKey(key);
 
-        StringBuilder history = new StringBuilder();
+        JSONArray jsonArray = new JSONArray();
+        queryResultsIterator.forEach(keyModification -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("transactionId", keyModification.getTxId());
+            map.put("timestamp", keyModification. getTimestamp().toString());
+            map.put("value", keyModification.getStringValue());
+            map.put("isDeleted", keyModification.isDeleted());
+            jsonArray.put(map);
+        });
 
-        Iterator<KeyModification> iter = queryResult.iterator();
-
-        while (iter.hasNext()){
-            history.append(iter.next().getStringValue());
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.accumulate("transactions", jsonArray);
+        } catch (JSONException e) {
+            throw new RuntimeException("exception while generating json object");
         }
 
-        // Export history to the log
-        _logger.info(history);
-
-        String message = String.format("Query History Success:\n %s", history);
-
-        return newSuccessResponse(message);
+        _logger.info(jsonObject.toString());
+        return newSuccessResponse(jsonObject.toString());
     }
 
     public static void main(String[] args) {
