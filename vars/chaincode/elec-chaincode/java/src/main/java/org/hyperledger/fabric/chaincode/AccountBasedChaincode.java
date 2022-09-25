@@ -1,12 +1,21 @@
 package org.hyperledger.fabric.chaincode;
 
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import io.netty.handler.ssl.OpenSsl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hyperledger.fabric.shim.ChaincodeBase;
 import org.hyperledger.fabric.shim.ChaincodeStub;
+import org.hyperledger.fabric.shim.ledger.KeyModification;
+import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 
 public class AccountBasedChaincode extends ChaincodeBase {
 
@@ -64,6 +73,9 @@ public class AccountBasedChaincode extends ChaincodeBase {
             if (func.equals("query")) {
                 return query(stub, params);
             }
+            if (func.equals("queryHistory")){
+                return queryHistory(stub, params);
+            }
             return newErrorResponse("Invalid invoke function name. Expecting one of: [\"invoke\", \"delete\", \"query\"]");
         } catch (Throwable e) {
             return newErrorResponse(e);
@@ -72,6 +84,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
     // Make a Trasfer
     // Transfer format: {accountFrom, accountTo, transferredAmount, elecPrice}
+    // electricity flows from accountFrom to accountTo
     private Response transfer(ChaincodeStub stub, List<String> args) {
         if (args.size() != 4) {
             return newErrorResponse("Incorrect number of arguments. Expecting 4");
@@ -155,6 +168,47 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance: %d\n", key, account.getElecAmount(), account.getBalance()));
         return newSuccessResponse("Query Success", accountBytes);
+    }
+
+    // Query the history by key
+    // Query history format: {queryID}
+    private Response queryHistory(ChaincodeStub stub, List<String> args){
+        // Check the number of arguments
+        if (args.size() != 1){
+            return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query");
+        }
+        String key = args.get(0);
+
+        if (stub.getState(key) == null){
+            return newErrorResponse(String.format("Error: state for %s is null", key));
+        }
+
+        // Get history
+        QueryResultsIterator<KeyModification> queryResultsIterator = stub.getHistoryForKey(key);
+
+        JSONArray jsonArray = new JSONArray();
+        queryResultsIterator.forEach(keyModification -> {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("transactionId", keyModification.getTxId());
+            map.put("timestamp", keyModification.getTimestamp().toString());
+            Account account = (Account) Utility.toObject(keyModification.getValue());
+            map.put("value",
+                    "accountId" + account.getAccountId()
+                  + "elecAmount" + account.getElecAmount()
+                  + "balance" + account.getBalance());
+            map.put("isDeleted", keyModification.isDeleted());
+            jsonArray.put(map);
+        });
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.accumulate("transactions", jsonArray);
+        } catch (JSONException e) {
+            throw new RuntimeException("exception while generating json object");
+        }
+
+        _logger.info(jsonObject.toString());
+        return newSuccessResponse(jsonObject.toString());
     }
 
     public static void main(String[] args) {

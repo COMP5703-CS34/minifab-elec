@@ -1,9 +1,13 @@
 
 .DS_Store
-vars/chaincode/elec-chaincode/java/.idea
+
+vars/chaincode/elec-chaincode/.idea/*
+vars/chaincode/elec-chaincode/java/.idea/*
 vars/chaincode/elec-chaincode/java/.gradle
 
 vars/chaincode/elec-chaincode/java/gradle/wrapper/gradle-wrapper.jar
 vars/chaincode/elec-chaincode/java/gradle/wrapper/gradle-wrapper.properties
 vars/chaincode/elec-chaincode/java/gradlew
 vars/chaincode/elec-chaincode/java/gradlew.bat
+vars/chaincode/elec-chaincode/java/build/*
+
