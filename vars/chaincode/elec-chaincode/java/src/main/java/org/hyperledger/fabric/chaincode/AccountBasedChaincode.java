@@ -177,7 +177,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
     // Query All accounts in the chain
     //QeuryAll format: {}
     private Response queryAllAccount(ChaincodeStub stub) {
-        QueryResultsIterator<KeyValue> queryResultsIterator = stub.getStateByRange("", "");
+        QueryResultsIterator<KeyValue> queryResultsIterator = stub.getStateByRange("A", "Z");
 
         JSONArray jsonArray = new JSONArray();
         queryResultsIterator.forEach(keyValue ->  {
@@ -193,7 +193,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.accumulate("transactions", jsonArray);
+            jsonObject.accumulate("accounts", jsonArray);
         } catch (JSONException e) {
             throw new RuntimeException("exception while generating json object");
         }
