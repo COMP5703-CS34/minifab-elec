@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 
+import org.hyperledger.fabric.shim.ledger.KeyValue;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,6 +76,9 @@ public class AccountBasedChaincode extends ChaincodeBase {
             }
             if (func.equals("queryHistory")){
                 return queryHistory(stub, params);
+            }
+            if (func.equals("queryAllAccount")){
+                return queryAllAccount(stub);
             }
             return newErrorResponse("Invalid invoke function name. Expecting one of: [\"invoke\", \"delete\", \"query\"]");
         } catch (Throwable e) {
@@ -170,6 +174,34 @@ public class AccountBasedChaincode extends ChaincodeBase {
         return newSuccessResponse("Query Success", accountBytes);
     }
 
+    // Query All accounts in the chain
+    //QeuryAll format: {}
+    private Response queryAllAccount(ChaincodeStub stub) {
+        QueryResultsIterator<KeyValue> queryResultsIterator = stub.getStateByRange("", "");
+
+        JSONArray jsonArray = new JSONArray();
+        queryResultsIterator.forEach(keyValue ->  {
+            Map<String, Object> map = new LinkedHashMap<>();
+            map.put("key", keyValue.getKey());
+            Account account = (Account) Utility.toObject(keyValue.getValue());
+            map.put("accountId", account.getAccountId());
+            map.put("elecAmount", account.getElecAmount());
+            map.put("balance", account.getBalance());
+
+            jsonArray.put(map);
+        });
+
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.accumulate("transactions", jsonArray);
+        } catch (JSONException e) {
+            throw new RuntimeException("exception while generating json object");
+        }
+
+        _logger.info(jsonObject.toString());
+        return newSuccessResponse(jsonObject.toString());
+    }
+
     // Query the history by key
     // Query history format: {queryID}
     private Response queryHistory(ChaincodeStub stub, List<String> args){
@@ -192,10 +224,9 @@ public class AccountBasedChaincode extends ChaincodeBase {
             map.put("transactionId", keyModification.getTxId());
             map.put("timestamp", keyModification.getTimestamp().toString());
             Account account = (Account) Utility.toObject(keyModification.getValue());
-            map.put("value",
-                    "accountId" + account.getAccountId()
-                  + "elecAmount" + account.getElecAmount()
-                  + "balance" + account.getBalance());
+            map.put("accountId", account.getAccountId());
+            map.put("elecAmount", account.getElecAmount());
+            map.put("balance", account.getBalance());
             map.put("isDeleted", keyModification.isDeleted());
             jsonArray.put(map);
         });
