@@ -199,7 +199,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         }
 
         _logger.info(jsonObject.toString());
-        return newSuccessResponse(jsonObject.toString());
+        return newSuccessResponse(jsonObject.toString().getBytes());
     }
 
     // Query the history by key
