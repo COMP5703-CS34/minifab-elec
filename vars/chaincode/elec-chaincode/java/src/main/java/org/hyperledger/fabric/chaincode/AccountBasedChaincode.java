@@ -73,6 +73,9 @@ public class AccountBasedChaincode extends ChaincodeBase {
             if (func.equals("delete")) {
                 return delete(stub, params);
             }
+            if (func.equals("add")) {
+                return delete(stub, params);
+            }
             if (func.equals("query")) {
                 return query(stub, params);
             }
@@ -159,6 +162,26 @@ public class AccountBasedChaincode extends ChaincodeBase {
         // Delete the key from the state in ledger
         stub.delState(key);
         return newSuccessResponse();
+    }
+
+    // Add an entity from state
+    // Add format: {AccountID, elecAmount, balance, password}
+    private Response add(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 4) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 1");
+        }
+        String AccountID = args.get(0);
+        int elecAmount = Integer.parseInt(args.get(1));
+        int balance = Integer.parseInt(args.get(2));
+        String password = args.get(3);
+
+
+        Account account = new Account(AccountID, elecAmount, balance, password);
+
+        // Delete the key from the state in ledger
+        stub.putState(AccountID, Utility.toByteArray(account));
+        _logger.info(String.format("Add success! Name: %s, Amount: %d, Balance: %d, Password: %s", AccountID, elecAmount, balance, password));
+        return newSuccessResponse("Add success!");
     }
 
     // Query callback representing the query of a chaincode
