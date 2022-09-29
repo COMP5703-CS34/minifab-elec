@@ -74,7 +74,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
                 return delete(stub, params);
             }
             if (func.equals("add")) {
-                return delete(stub, params);
+                return add(stub, params);
             }
             if (func.equals("query")) {
                 return query(stub, params);
@@ -268,7 +268,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         }
 
         _logger.info(jsonObject.toString());
-        return newSuccessResponse(jsonObject.toString());
+        return newSuccessResponse(jsonObject.toString().getBytes());
     }
 
     private Response getPassword(ChaincodeStub stub, List<String> args) {
