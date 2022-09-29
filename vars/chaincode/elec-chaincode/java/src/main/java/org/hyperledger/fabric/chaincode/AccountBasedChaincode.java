@@ -38,16 +38,18 @@ public class AccountBasedChaincode extends ChaincodeBase {
             String account1Key = args.get(0);
             int account1ElecAmount = Integer.parseInt(args.get(1));
             int account1Balance = Integer.parseInt(args.get(2));
-            Account account1 = new Account(account1Key, account1ElecAmount, account1Balance);
+            String account1Password = args.get(3);
+            Account account1 = new Account(account1Key, account1ElecAmount, account1Balance, account1Password);
 
-            String account2Key = args.get(3);
-            int account2ElecAmount = Integer.parseInt(args.get(4));
-            int account2Balance = Integer.parseInt(args.get(5));
-            Account account2 = new Account(account2Key, account2ElecAmount, account2Balance);
+            String account2Key = args.get(4);
+            int account2ElecAmount = Integer.parseInt(args.get(5));
+            int account2Balance = Integer.parseInt(args.get(6));
+            String account2Password = args.get(7);
+            Account account2 = new Account(account2Key, account2ElecAmount, account2Balance, account2Password);
 
-            _logger.info(String.format("account %s, elec = %d, balance = %d; account %s, elec = %d, balance = %d", 
-                                account1Key, account1ElecAmount, account1Balance, 
-                                account2Key, account2ElecAmount, account2Balance));
+            _logger.info(String.format("account %s, elec = %d, balance = %d; account %s, elec = %d, balance = %d",
+                    account1Key, account1ElecAmount, account1Balance,
+                    account2Key, account2ElecAmount, account2Balance));
 
 
             stub.putState(account1Key, Utility.toByteArray(account1));
@@ -79,6 +81,10 @@ public class AccountBasedChaincode extends ChaincodeBase {
             }
             if (func.equals("queryAllAccount")){
                 return queryAllAccount(stub);
+            }
+            //TODO
+            if (func.equals("getPassword")){
+                return getPassword(stub, params);
             }
             return newErrorResponse("Invalid invoke function name. Expecting one of: [\"invoke\", \"delete\", \"query\"]");
         } catch (Throwable e) {
@@ -240,6 +246,26 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         _logger.info(jsonObject.toString());
         return newSuccessResponse(jsonObject.toString());
+    }
+
+    private Response getPassword(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 1) {
+            return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query");
+        }
+        String key = args.get(0);
+
+        byte[] accountBytes = stub.getState(key);
+        if (accountBytes == null) {
+            return newErrorResponse(String.format("Error: state for %s is null", key));
+        }
+        Account account = (Account)Utility.toObject(accountBytes);
+
+        String passwordString = account.getPassword();
+
+        byte[] password = passwordString.getBytes();
+
+        _logger.info(String.format("Query Response:\nName: %s, password: %s\n", key, passwordString));
+        return newSuccessResponse("Query Success", password);
     }
 
     public static void main(String[] args) {
