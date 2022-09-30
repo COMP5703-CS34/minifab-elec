@@ -6,21 +6,23 @@ This is for user-defined network on local machine.
 
 VM: Vmware Fusion on MacOS
 
-OS: Ubuntu 20.04 server
+OS: Ubuntu 20.04 desktop
 
 ## Tutorials
 
-1. Install prerequisites: docker: 
+1. Set up the network: See the documentation.
 
-   ```bash
-   sudo apt install docker
-   sudo apt install docker-compose
-   ```
-
-3. Commit our chaincode to the network: 
+3. Useful Commands:
 
    ```Bash
-   sudo ./minifab up -o stateA.elec.com -i 2.1 -n elec-chaincode -l java -v 1.0 -d true -e true -p '"init","Plant","10000","500000","Home","10","100"'
+   # Set up the network
+   sudo ./minifab up -o stateA.elec.com -i 2.1 -n elec-chaincode -l java -v 1.0 -d true -e true -p '"init","Plant","10000","500000","Plantpwd","Home","10","100","Homepwd"'
+   
+   #Invoke Chaincode function
+   sudo ./minifab invoke -p "'function','parameter1','parameter2',..."
+   
+   # Clean up the network
+   sudo ./minifab cleanup
    ```
 
 ## Useful resources
