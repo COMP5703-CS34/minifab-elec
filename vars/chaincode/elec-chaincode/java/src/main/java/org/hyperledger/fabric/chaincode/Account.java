@@ -4,28 +4,26 @@ import java.io.Serializable;
 
 public class Account implements Serializable {
     private String accountId;
-    private int elecAmount;
-    private int balance;
+    private double elecAmount;
+    private double balance;
     private String password;
 
-    public Account(String accountId, int elecAmount, int balance, String password) {
+    public Account(String accountId, double elecAmount, double balance, String password) {
         this.accountId = accountId;
         this.elecAmount = elecAmount;
         this.balance = balance;
         this.password = password;
     }
 
-    private Account() {}
-
     public String getAccountId() {
         return accountId;
     }
 
-    public int getElecAmount() {
+    public double getElecAmount() {
         return elecAmount;
     }
 
-    public int getBalance() {
+    public double getBalance() {
         return balance;
     }
 
@@ -33,11 +31,11 @@ public class Account implements Serializable {
         return password;
     }
 
-    public void setElecAmount(int elecAmount) {
+    public void setElecAmount(double elecAmount) {
         this.elecAmount = elecAmount;
     }
 
-    public void setBalance(int balance) {
+    public void setBalance(double balance) {
         this.balance = balance;
     }
 

@@ -1,6 +1,5 @@
 package org.hyperledger.fabric.chaincode;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,14 +35,14 @@ public class AccountBasedChaincode extends ChaincodeBase {
             }
             // Initialize the chaincode
             String account1Key = args.get(0);
-            int account1ElecAmount = Integer.parseInt(args.get(1));
-            int account1Balance = Integer.parseInt(args.get(2));
+            double account1ElecAmount = Double.parseDouble(args.get(1));
+            double account1Balance = Double.parseDouble(args.get(2));
             String account1Password = args.get(3);
             Account account1 = new Account(account1Key, account1ElecAmount, account1Balance, account1Password);
 
             String account2Key = args.get(4);
-            int account2ElecAmount = Integer.parseInt(args.get(5));
-            int account2Balance = Integer.parseInt(args.get(6));
+            double account2ElecAmount = Double.parseDouble(args.get(5));
+            double account2Balance = Double.parseDouble(args.get(6));
             String account2Password = args.get(7);
             Account account2 = new Account(account2Key, account2ElecAmount, account2Balance, account2Password);
 
@@ -85,7 +84,6 @@ public class AccountBasedChaincode extends ChaincodeBase {
             if (func.equals("queryAllAccount")){
                 return queryAllAccount(stub);
             }
-            //TODO
             if (func.equals("getPassword")){
                 return getPassword(stub, params);
             }
@@ -121,10 +119,10 @@ public class AccountBasedChaincode extends ChaincodeBase {
         Account fromAccount = (Account)Utility.toObject(fromAccountBytes);;
         Account toAccount = (Account)Utility.toObject(toAccountBytes);
 
-        int fromAccountElecAmount = fromAccount.getElecAmount();
-        int fromAccountBalance = fromAccount.getBalance();
-        int toAccountElecAmount = toAccount.getElecAmount();
-        int toAccountBalance = toAccount.getBalance();
+        double fromAccountElecAmount = fromAccount.getElecAmount();
+        double fromAccountBalance = fromAccount.getBalance();
+        double toAccountElecAmount = toAccount.getElecAmount();
+        double toAccountBalance = toAccount.getBalance();
 
         if (transferredAmount > fromAccountElecAmount) {
             return newErrorResponse(String.format("not enough money in account %s", fromAccountKey));
