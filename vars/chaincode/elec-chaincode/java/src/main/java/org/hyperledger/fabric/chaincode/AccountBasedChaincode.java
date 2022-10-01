@@ -157,9 +157,15 @@ public class AccountBasedChaincode extends ChaincodeBase {
             return newErrorResponse("Incorrect number of arguments. Expecting 1");
         }
         String key = args.get(0);
+
+        byte[] accountBytes = stub.getState(key);
+        if (accountBytes == null) {
+            return newErrorResponse(String.format("Error: state for %s is null", key));
+        }
+
         // Delete the key from the state in ledger
         stub.delState(key);
-        return newSuccessResponse();
+        return newSuccessResponse("Delete Success");
     }
 
     // Add an entity from state
