@@ -46,7 +46,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
             String account2Password = args.get(7);
             Account account2 = new Account(account2Key, account2ElecAmount, account2Balance, account2Password);
 
-            _logger.info(String.format("account %s, elec = %d, balance = %d; account %s, elec = %d, balance = %d",
+            _logger.info(String.format("account %s, elec = %f, balance = %f; account %s, elec = %f, balance = %f",
                     account1Key, account1ElecAmount, account1Balance,
                     account2Key, account2ElecAmount, account2Balance));
 
@@ -74,6 +74,9 @@ public class AccountBasedChaincode extends ChaincodeBase {
             }
             if (func.equals("add")) {
                 return add(stub, params);
+            }
+            if (func.equals("update")){
+                return update(stub, params);
             }
             if (func.equals("query")) {
                 return query(stub, params);
@@ -172,20 +175,51 @@ public class AccountBasedChaincode extends ChaincodeBase {
     // Add format: {AccountID, elecAmount, balance, password}
     private Response add(ChaincodeStub stub, List<String> args) {
         if (args.size() != 4) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 1");
+            return newErrorResponse("Incorrect number of arguments. Expecting 4");
         }
         String AccountID = args.get(0);
-        int elecAmount = Integer.parseInt(args.get(1));
-        int balance = Integer.parseInt(args.get(2));
+        double elecAmount = Double.parseDouble(args.get(1));
+        double balance = Double.parseDouble(args.get(2));
         String password = args.get(3);
 
 
         Account account = new Account(AccountID, elecAmount, balance, password);
 
-        // Delete the key from the state in ledger
+        byte[] accountBytes = stub.getState(AccountID);
+        if (accountBytes != null) {
+            return newErrorResponse(String.format("Error: %s exist", AccountID));
+        }
+
+        // Add the key from the state in ledger
         stub.putState(AccountID, Utility.toByteArray(account));
-        _logger.info(String.format("Add success! Name: %s, Amount: %d, Balance: %d, Password: %s", AccountID, elecAmount, balance, password));
+        _logger.info(String.format("Add success! Name: %s, Amount: %f, Balance: %f, Password: %s", AccountID, elecAmount, balance, password));
         return newSuccessResponse("Add success!");
+    }
+
+    // Update the information of users
+    // Update formate: {AccountID, elecAmount, balance, password}
+    private Response update(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 4) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 4");
+        }
+
+        String AccountID = args.get(0);
+        double elecAmount = Double.parseDouble(args.get(1));
+        double balance = Double.parseDouble(args.get(2));
+        String password = args.get(3);
+
+        Account account = new Account(AccountID, elecAmount, balance, password);
+
+        byte[] accountBytes = stub.getState(AccountID);
+        if (accountBytes == null) {
+            return newErrorResponse(String.format("Error: state for %s is null", AccountID));
+        }
+
+        // Update the key from the state in ledger
+        stub.putState(AccountID, Utility.toByteArray(account));
+        _logger.info(String.format("Update success! Name: %s, Amount: %f, Balance: %f, Password: %s", AccountID, elecAmount, balance, password));
+
+        return newSuccessResponse("Update success!");
     }
 
     // Query callback representing the query of a chaincode
@@ -203,7 +237,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         Account account = (Account)Utility.toObject(accountBytes);
 
-        _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance: %d\n", key, account.getElecAmount(), account.getBalance()));
+        _logger.info(String.format("Query Response:\nName: %s, Amount: %f, Balance: %f\n", key, account.getElecAmount(), account.getBalance()));
         return newSuccessResponse("Query Success", accountBytes);
     }
 
