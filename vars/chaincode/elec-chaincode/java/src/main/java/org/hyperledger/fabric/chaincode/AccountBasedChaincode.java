@@ -75,6 +75,9 @@ public class AccountBasedChaincode extends ChaincodeBase {
             if (func.equals("add")) {
                 return add(stub, params);
             }
+            if (func.equals("update")){
+                return update(stub, params);
+            }
             if (func.equals("query")) {
                 return query(stub, params);
             }
@@ -157,29 +160,66 @@ public class AccountBasedChaincode extends ChaincodeBase {
             return newErrorResponse("Incorrect number of arguments. Expecting 1");
         }
         String key = args.get(0);
+
+        byte[] accountBytes = stub.getState(key);
+        if (accountBytes == null) {
+            return newErrorResponse(String.format("Error: state for %s is null", key));
+        }
+
         // Delete the key from the state in ledger
         stub.delState(key);
-        return newSuccessResponse();
+        return newSuccessResponse("Delete Success");
     }
 
     // Add an entity from state
     // Add format: {AccountID, elecAmount, balance, password}
     private Response add(ChaincodeStub stub, List<String> args) {
         if (args.size() != 4) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 1");
+            return newErrorResponse("Incorrect number of arguments. Expecting 4");
         }
         String AccountID = args.get(0);
-        int elecAmount = Integer.parseInt(args.get(1));
-        int balance = Integer.parseInt(args.get(2));
+        double elecAmount = Double.parseDouble(args.get(1));
+        double balance = Double.parseDouble(args.get(2));
         String password = args.get(3);
 
 
         Account account = new Account(AccountID, elecAmount, balance, password);
 
-        // Delete the key from the state in ledger
+        byte[] accountBytes = stub.getState(AccountID);
+        if (accountBytes != null) {
+            return newErrorResponse(String.format("Error: %s exist", AccountID));
+        }
+
+        // Add the key from the state in ledger
         stub.putState(AccountID, Utility.toByteArray(account));
         _logger.info(String.format("Add success! Name: %s, Amount: %f, Balance: %f, Password: %s", AccountID, elecAmount, balance, password));
         return newSuccessResponse("Add success!");
+    }
+
+    // Update the information of users
+    // Update formate: {AccountID, elecAmount, balance, password}
+    private Response update(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 4) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 4");
+        }
+
+        String AccountID = args.get(0);
+        double elecAmount = Double.parseDouble(args.get(1));
+        double balance = Double.parseDouble(args.get(2));
+        String password = args.get(3);
+
+        Account account = new Account(AccountID, elecAmount, balance, password);
+
+        byte[] accountBytes = stub.getState(AccountID);
+        if (accountBytes == null) {
+            return newErrorResponse(String.format("Error: state for %s is null", AccountID));
+        }
+
+        // Update the key from the state in ledger
+        stub.putState(AccountID, Utility.toByteArray(account));
+        _logger.info(String.format("Update success! Name: %s, Amount: %f, Balance: %f, Password: %s", AccountID, elecAmount, balance, password));
+
+        return newSuccessResponse("Update success!");
     }
 
     // Query callback representing the query of a chaincode
