@@ -46,7 +46,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
             String account2Password = args.get(7);
             Account account2 = new Account(account2Key, account2ElecAmount, account2Balance, account2Password);
 
-            _logger.info(String.format("account %s, elec = %d, balance = %d; account %s, elec = %d, balance = %d",
+            _logger.info(String.format("account %s, elec = %f, balance = %f; account %s, elec = %f, balance = %f",
                     account1Key, account1ElecAmount, account1Balance,
                     account2Key, account2ElecAmount, account2Balance));
 
@@ -138,8 +138,8 @@ public class AccountBasedChaincode extends ChaincodeBase {
         fromAccount.setBalance(fromAccountBalance);
         toAccount.setBalance(toAccountBalance);
 
-        _logger.info(String.format("new status of %s: %d %d", fromAccountKey, fromAccountElecAmount, fromAccountBalance));
-        _logger.info(String.format("new status of %s: %d %d", toAccountKey, toAccountElecAmount, toAccountBalance));
+        _logger.info(String.format("new status of %s: %f %f", fromAccountKey, fromAccountElecAmount, fromAccountBalance));
+        _logger.info(String.format("new status of %s: %f %f", toAccountKey, toAccountElecAmount, toAccountBalance));
 
         stub.putState(fromAccountKey, Utility.toByteArray(fromAccount));
         stub.putState(toAccountKey, Utility.toByteArray(toAccount));
@@ -178,7 +178,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         // Delete the key from the state in ledger
         stub.putState(AccountID, Utility.toByteArray(account));
-        _logger.info(String.format("Add success! Name: %s, Amount: %d, Balance: %d, Password: %s", AccountID, elecAmount, balance, password));
+        _logger.info(String.format("Add success! Name: %s, Amount: %f, Balance: %f, Password: %s", AccountID, elecAmount, balance, password));
         return newSuccessResponse("Add success!");
     }
 
@@ -197,7 +197,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         Account account = (Account)Utility.toObject(accountBytes);
 
-        _logger.info(String.format("Query Response:\nName: %s, Amount: %d, Balance: %d\n", key, account.getElecAmount(), account.getBalance()));
+        _logger.info(String.format("Query Response:\nName: %s, Amount: %f, Balance: %f\n", key, account.getElecAmount(), account.getBalance()));
         return newSuccessResponse("Query Success", accountBytes);
     }
 
