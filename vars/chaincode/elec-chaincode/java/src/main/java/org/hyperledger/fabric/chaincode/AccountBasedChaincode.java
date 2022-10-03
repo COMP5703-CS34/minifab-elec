@@ -272,6 +272,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
             map.put("accountId", account.getAccountId());
             map.put("elecAmount", account.getElecAmount());
             map.put("balance", account.getBalance());
+            map.put("identity", account.getIdentity());
 
             jsonArray.put(map);
         });
