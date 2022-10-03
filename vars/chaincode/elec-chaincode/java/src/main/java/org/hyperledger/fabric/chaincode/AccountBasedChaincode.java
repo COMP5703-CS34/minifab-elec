@@ -30,25 +30,27 @@ public class AccountBasedChaincode extends ChaincodeBase {
                 return newErrorResponse("function other than init is not supported");
             }
             List<String> args = stub.getParameters();
-            if (args.size() != 6) {
-                newErrorResponse("Incorrect number of arguments. Expecting 6");
+            if (args.size() != 10) {
+                newErrorResponse("Incorrect number of arguments. Expecting 10");
             }
             // Initialize the chaincode
             String account1Key = args.get(0);
             double account1ElecAmount = Double.parseDouble(args.get(1));
             double account1Balance = Double.parseDouble(args.get(2));
             String account1Password = args.get(3);
-            Account account1 = new Account(account1Key, account1ElecAmount, account1Balance, account1Password);
+            String account1Identity =args.get(4);
+            Account account1 = new Account(account1Key, account1ElecAmount, account1Balance, account1Password, account1Identity);
 
-            String account2Key = args.get(4);
-            double account2ElecAmount = Double.parseDouble(args.get(5));
-            double account2Balance = Double.parseDouble(args.get(6));
-            String account2Password = args.get(7);
-            Account account2 = new Account(account2Key, account2ElecAmount, account2Balance, account2Password);
+            String account2Key = args.get(5);
+            double account2ElecAmount = Double.parseDouble(args.get(6));
+            double account2Balance = Double.parseDouble(args.get(7));
+            String account2Password = args.get(8);
+            String account2Identity = args.get(9);
+            Account account2 = new Account(account2Key, account2ElecAmount, account2Balance, account2Password, account2Identity);
 
-            _logger.info(String.format("account %s, elec = %f, balance = %f; account %s, elec = %f, balance = %f",
-                    account1Key, account1ElecAmount, account1Balance,
-                    account2Key, account2ElecAmount, account2Balance));
+            _logger.info(String.format("account %s, elec = %f, balance = %f, identity = %s; account %s, elec = %f, balance = %f, identity: %s",
+                    account1Key, account1ElecAmount, account1Balance, account1Identity,
+                    account2Key, account2ElecAmount, account2Balance, account2Identity));
 
 
             stub.putState(account1Key, Utility.toByteArray(account1));
@@ -90,7 +92,8 @@ public class AccountBasedChaincode extends ChaincodeBase {
             if (func.equals("getPassword")){
                 return getPassword(stub, params);
             }
-            return newErrorResponse("Invalid invoke function name. Expecting one of: [\"invoke\", \"delete\", \"query\"]");
+            return newErrorResponse("Invalid invoke function name. Expecting one of: [\"invoke\", \"delete\", " +
+                    "\"query\", \"add\", \"update\", \"queryHistory\", \"queryAllAccount\", \"getPassword\"]");
         } catch (Throwable e) {
             return newErrorResponse(e);
         }
@@ -119,8 +122,12 @@ public class AccountBasedChaincode extends ChaincodeBase {
             return newErrorResponse(String.format("Entity %s not found", toAccountKey));
         }
 
-        Account fromAccount = (Account)Utility.toObject(fromAccountBytes);;
+        Account fromAccount = (Account)Utility.toObject(fromAccountBytes);
         Account toAccount = (Account)Utility.toObject(toAccountBytes);
+
+        if (fromAccount.getIdentity().equals("Admin") || toAccount.getIdentity().equals("Admin")){
+            return newErrorResponse("Illegal identity");
+        }
 
         double fromAccountElecAmount = fromAccount.getElecAmount();
         double fromAccountBalance = fromAccount.getBalance();
@@ -172,19 +179,28 @@ public class AccountBasedChaincode extends ChaincodeBase {
     }
 
     // Add an entity from state
-    // Add format: {AccountID, elecAmount, balance, password}
+    // Add format: {AccountID, elecAmount, balance, password, identity, adminID}
     private Response add(ChaincodeStub stub, List<String> args) {
-        if (args.size() != 4) {
+        if (args.size() != 6) {
             return newErrorResponse("Incorrect number of arguments. Expecting 4");
         }
         String AccountID = args.get(0);
         double elecAmount = Double.parseDouble(args.get(1));
         double balance = Double.parseDouble(args.get(2));
         String password = args.get(3);
+        String identity = args.get(4);
+        String adminID = args.get(5);
 
+        Account account = new Account(AccountID, elecAmount, balance, password, identity);
 
-        Account account = new Account(AccountID, elecAmount, balance, password);
+        // Check the identity of the adder
+        byte[] adminBytes = stub.getState(adminID);
+        Account admin =  (Account)Utility.toObject(adminBytes);
+        if (!admin.getIdentity().equals("Admin")) {
+            return newErrorResponse("Insufficient Permission");
+        }
 
+        //Check the existence of accounts
         byte[] accountBytes = stub.getState(AccountID);
         if (accountBytes != null) {
             return newErrorResponse(String.format("Error: %s exist", AccountID));
@@ -197,9 +213,9 @@ public class AccountBasedChaincode extends ChaincodeBase {
     }
 
     // Update the information of users
-    // Update formate: {AccountID, elecAmount, balance, password}
+    // Update formate: {AccountID, elecAmount, balance, password, identity}
     private Response update(ChaincodeStub stub, List<String> args) {
-        if (args.size() != 4) {
+        if (args.size() != 5) {
             return newErrorResponse("Incorrect number of arguments. Expecting 4");
         }
 
@@ -207,8 +223,9 @@ public class AccountBasedChaincode extends ChaincodeBase {
         double elecAmount = Double.parseDouble(args.get(1));
         double balance = Double.parseDouble(args.get(2));
         String password = args.get(3);
+        String identity = args.get(4);
 
-        Account account = new Account(AccountID, elecAmount, balance, password);
+        Account account = new Account(AccountID, elecAmount, balance, password, identity);
 
         byte[] accountBytes = stub.getState(AccountID);
         if (accountBytes == null) {
@@ -217,7 +234,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         // Update the key from the state in ledger
         stub.putState(AccountID, Utility.toByteArray(account));
-        _logger.info(String.format("Update success! Name: %s, Amount: %f, Balance: %f, Password: %s", AccountID, elecAmount, balance, password));
+        _logger.info(String.format("Update success! Name: %s, Amount: %f, Balance: %f, Password: %s, Identity: %s", AccountID, elecAmount, balance, password, identity));
 
         return newSuccessResponse("Update success!");
     }
@@ -237,7 +254,8 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         Account account = (Account)Utility.toObject(accountBytes);
 
-        _logger.info(String.format("Query Response:\nName: %s, Amount: %f, Balance: %f\n", key, account.getElecAmount(), account.getBalance()));
+        _logger.info(String.format("Query Response:\nName: %s, Amount: %f, Balance: %f, Identity: %s \n", key,
+                account.getElecAmount(), account.getBalance(), account.getIdentity()));
         return newSuccessResponse("Query Success", accountBytes);
     }
 
