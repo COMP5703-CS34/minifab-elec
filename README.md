@@ -16,9 +16,9 @@ OS: Ubuntu 20.04 desktop
 
    ```Bash
    # Set up the network
-   sudo ./minifab up -o stateA.elec.com -i 2.1 -n elec-chaincode -l java -v 1.0 -d true -e true -p '"init","Plant","10000","500000","Plantpwd","Home","10","100","Homepwd"'
+   sudo ./minifab up -o stateA.elec.com -i 2.1 -n elec-chaincode -l java -v 1.0 -d true -e true -p '"init"'
    
-   #Invoke Chaincode function
+   # Invoke Chaincode function
    sudo ./minifab invoke -p "'function','parameter1','parameter2',..."
    
    # Clean up the network

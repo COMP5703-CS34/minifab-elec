@@ -29,32 +29,14 @@ public class AccountBasedChaincode extends ChaincodeBase {
             if (!func.equals("init")) {
                 return newErrorResponse("function other than init is not supported");
             }
-            List<String> args = stub.getParameters();
-            if (args.size() != 10) {
-                newErrorResponse("Incorrect number of arguments. Expecting 10");
-            }
-            // Initialize the chaincode
-            String account1Key = args.get(0);
-            double account1ElecAmount = Double.parseDouble(args.get(1));
-            double account1Balance = Double.parseDouble(args.get(2));
-            String account1Password = args.get(3);
-            String account1Identity =args.get(4);
-            Account account1 = new Account(account1Key, account1ElecAmount, account1Balance, account1Password, account1Identity);
+            // List<String> args = stub.getParameters();
+            // if (args.size() != ) {
+            //     newErrorResponse("Incorrect number of arguments. Expecting 10");
+            // }
+            // Initialize the admin
+            Account adminAccount = new Account("Admin", 0, 0, "Adminpwd", "Admin");
 
-            String account2Key = args.get(5);
-            double account2ElecAmount = Double.parseDouble(args.get(6));
-            double account2Balance = Double.parseDouble(args.get(7));
-            String account2Password = args.get(8);
-            String account2Identity = args.get(9);
-            Account account2 = new Account(account2Key, account2ElecAmount, account2Balance, account2Password, account2Identity);
-
-            _logger.info(String.format("account %s, elec = %f, balance = %f, identity = %s; account %s, elec = %f, balance = %f, identity: %s",
-                    account1Key, account1ElecAmount, account1Balance, account1Identity,
-                    account2Key, account2ElecAmount, account2Balance, account2Identity));
-
-
-            stub.putState(account1Key, Utility.toByteArray(account1));
-            stub.putState(account2Key, Utility.toByteArray(account2));
+            stub.putState("Admin", Utility.toByteArray(adminAccount));
 
             return newSuccessResponse();
         } catch (Throwable e) {

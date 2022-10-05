@@ -2,15 +2,12 @@ package org.hyperledger.fabric.chaincode;
 
 import java.io.Serializable;
 
-
 public class Account implements Serializable {
     private String accountId;
     private double elecAmount;
     private double balance;
     private String password;
-
     private String identity;
-
 
     public Account(String accountId, double elecAmount, double balance, String password, String identity) {
         this.accountId = accountId;
