@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import io.netty.handler.ssl.OpenSsl;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hyperledger.fabric.shim.ChaincodeBase;
@@ -95,12 +96,12 @@ public class AccountBasedChaincode extends ChaincodeBase {
         int elecPrice = Integer.parseInt(args.get(3));
 
         byte[] fromAccountBytes = stub.getState(fromAccountKey);
-        if (fromAccountBytes == null) {
+        if (fromAccountBytes.toString().isEmpty()) {
             return newErrorResponse(String.format("Entity %s not found", fromAccountKey));
         }
 
         byte[] toAccountBytes = stub.getState(toAccountKey);
-        if (toAccountBytes == null) {
+        if (toAccountBytes.toString().isEmpty()) {
             return newErrorResponse(String.format("Entity %s not found", toAccountKey));
         }
 
@@ -151,7 +152,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         String key = args.get(0);
 
         byte[] accountBytes = stub.getState(key);
-        if (accountBytes == null) {
+        if (accountBytes.toString().isEmpty()) {
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
 
@@ -184,7 +185,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         //Check the existence of accounts
         byte[] accountBytes = stub.getState(AccountID);
-        if (accountBytes != null) {
+        if (accountBytes.toString().isEmpty()) {
             return newErrorResponse(String.format("Error: %s exist", AccountID));
         }
 
@@ -210,7 +211,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         Account account = new Account(AccountID, elecAmount, balance, password, identity);
 
         byte[] accountBytes = stub.getState(AccountID);
-        if (accountBytes == null) {
+        if (accountBytes.toString().isEmpty()) {
             return newErrorResponse(String.format("Error: state for %s is null", AccountID));
         }
 
@@ -230,7 +231,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         String key = args.get(0);
 
         byte[] accountBytes = stub.getState(key);
-        if (accountBytes == null) {
+        if (accountBytes.toString().isEmpty()) {
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
 
@@ -279,7 +280,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         }
         String key = args.get(0);
 
-        if (stub.getState(key) == null){
+        if (stub.getState(key).toString().isEmpty()){
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
 
@@ -317,7 +318,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         String key = args.get(0);
 
         byte[] accountBytes = stub.getState(key);
-        if (accountBytes == null) {
+        if (accountBytes.toString().isEmpty()) {
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
         Account account = (Account)Utility.toObject(accountBytes);
