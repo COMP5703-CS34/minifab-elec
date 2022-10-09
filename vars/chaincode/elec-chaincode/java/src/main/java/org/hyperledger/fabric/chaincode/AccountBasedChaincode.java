@@ -208,12 +208,17 @@ public class AccountBasedChaincode extends ChaincodeBase {
         String password = args.get(3);
         String identity = args.get(4);
 
-        Account account = new Account(AccountID, elecAmount, balance, password, identity);
-
         byte[] accountBytes = stub.getState(AccountID);
         if (accountBytes.toString().isEmpty()) {
             return newErrorResponse(String.format("Error: state for %s is null", AccountID));
         }
+
+        Account account = (Account)Utility.toObject(accountBytes);
+
+        account.setElecAmount(elecAmount);
+        account.setBalance(balance);
+        account.setPassword(password);
+        account.setIdentity(identity);
 
         // Update the key from the state in ledger
         stub.putState(AccountID, Utility.toByteArray(account));
