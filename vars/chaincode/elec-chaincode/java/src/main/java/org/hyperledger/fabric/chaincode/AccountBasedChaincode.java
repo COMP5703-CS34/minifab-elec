@@ -92,8 +92,8 @@ public class AccountBasedChaincode extends ChaincodeBase {
         // Parse parameters
         String fromAccountKey = args.get(0);
         String toAccountKey = args.get(1);
-        int transferredAmount = Integer.parseInt(args.get(2));
-        int elecPrice = Integer.parseInt(args.get(3));
+        double transferredAmount = Double.parseDouble(args.get(2));
+        double elecPrice = Double.parseDouble(args.get(3));
 
         byte[] fromAccountBytes = stub.getState(fromAccountKey);
         if (fromAccountBytes.toString().isEmpty()) {
@@ -199,7 +199,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
     // Update formate: {AccountID, elecAmount, balance, password, identity}
     private Response update(ChaincodeStub stub, List<String> args) {
         if (args.size() != 5) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 4");
+            return newErrorResponse("Incorrect number of arguments. Expecting 5");
         }
 
         String AccountID = args.get(0);
