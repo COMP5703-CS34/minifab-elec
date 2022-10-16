@@ -118,7 +118,11 @@ public class AccountBasedChaincode extends ChaincodeBase {
         double toAccountBalance = toAccount.getBalance();
 
         if (transferredAmount > fromAccountElecAmount) {
-            return newErrorResponse(String.format("not enough money in account %s", fromAccountKey));
+            return newErrorResponse(String.format("not enough electricity in account %s", fromAccountKey));
+        }
+
+        if (transferredAmount * elecPrice > toAccountBalance) {
+            return newErrorResponse(String.format("not enough money in account %s", toAccountKey));
         }
 
         fromAccountElecAmount -= transferredAmount;
