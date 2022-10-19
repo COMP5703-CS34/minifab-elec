@@ -72,6 +72,9 @@ public class AccountBasedChaincode extends ChaincodeBase {
             if (func.equals("queryAllAccount")){
                 return queryAllAccount(stub);
             }
+            if (func.equals("setPassword")){
+                return setPassword(stub, params);
+            }
             if (func.equals("getPassword")){
                 return getPassword(stub, params);
             }
@@ -318,6 +321,29 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         _logger.info(jsonObject.toString());
         return newSuccessResponse(jsonObject.toString().getBytes());
+    }
+
+    // Query the history by key
+    // Query history format: {queryID, passwd}
+    private Response setPassword(ChaincodeStub stub, List<String> args) {
+        if (args.size() != 2) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 2 args");
+        }
+        String key = args.get(0);
+        String passwd = args.get(1);
+
+        byte[] accountBytes = stub.getState(key);
+        if (accountBytes.toString().isEmpty()) {
+            return newErrorResponse(String.format("Error: state for %s is null", key));
+        }
+        Account account = (Account)Utility.toObject(accountBytes);
+
+        account.setPassword(passwd);
+
+        stub.putState(key, Utility.toByteArray(account));
+
+        _logger.info(String.format("Query Response:\nName: %s, password: %s\n", key, passwd));
+        return newSuccessResponse("Query Success");
     }
 
     private Response getPassword(ChaincodeStub stub, List<String> args) {
