@@ -203,17 +203,16 @@ public class AccountBasedChaincode extends ChaincodeBase {
     }
 
     // Update the information of users
-    // Update formate: {AccountID, elecAmount, balance, password, identity}
+    // Update formate: {AccountID, elecAmount, balance, identity}
     private Response update(ChaincodeStub stub, List<String> args) {
-        if (args.size() != 5) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 5");
+        if (args.size() != 4) {
+            return newErrorResponse("Incorrect number of arguments. Expecting 4");
         }
 
         String AccountID = args.get(0);
         double elecAmount = Double.parseDouble(args.get(1));
         double balance = Double.parseDouble(args.get(2));
-        String password = args.get(3);
-        String identity = args.get(4);
+        String identity = args.get(3);
 
         byte[] accountBytes = stub.getState(AccountID);
         if (accountBytes.toString().isEmpty()) {
@@ -224,12 +223,11 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         account.setElecAmount(elecAmount);
         account.setBalance(balance);
-        account.setPassword(password);
         account.setIdentity(identity);
 
         // Update the key from the state in ledger
         stub.putState(AccountID, Utility.toByteArray(account));
-        _logger.info(String.format("Update success! Name: %s, Amount: %f, Balance: %f, Password: %s, Identity: %s", AccountID, elecAmount, balance, password, identity));
+        _logger.info(String.format("Update success! Name: %s, Amount: %f, Balance: %f, Password: %s, Identity: %s", AccountID, elecAmount, balance, identity));
 
         return newSuccessResponse("Update success!");
     }
