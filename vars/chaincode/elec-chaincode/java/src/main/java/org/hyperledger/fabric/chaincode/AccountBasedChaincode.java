@@ -172,7 +172,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
     // Add format: {AccountID, elecAmount, balance, password, identity, adminID}
     private Response add(ChaincodeStub stub, List<String> args) {
         if (args.size() != 6) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 4");
+            return newErrorResponse("Incorrect number of arguments. Expecting 6");
         }
         String AccountID = args.get(0);
         double elecAmount = Double.parseDouble(args.get(1));
