@@ -227,7 +227,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         // Update the key from the state in ledger
         stub.putState(AccountID, Utility.toByteArray(account));
-        _logger.info(String.format("Update success! Name: %s, Amount: %f, Balance: %f, Password: %s, Identity: %s", AccountID, elecAmount, balance, identity));
+        _logger.info(String.format("Update success! Name: %s, Amount: %f, Balance: %f, Identity: %s", AccountID, elecAmount, balance, identity));
 
         return newSuccessResponse("Update success!");
     }
