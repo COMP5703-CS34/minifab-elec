@@ -99,12 +99,12 @@ public class AccountBasedChaincode extends ChaincodeBase {
         double elecPrice = Double.parseDouble(args.get(3));
 
         byte[] fromAccountBytes = stub.getState(fromAccountKey);
-        if (fromAccountBytes.toString().isEmpty()) {
+        if (stub.getStringState(fromAccountKey).isEmpty()) {
             return newErrorResponse(String.format("Entity %s not found", fromAccountKey));
         }
 
         byte[] toAccountBytes = stub.getState(toAccountKey);
-        if (toAccountBytes.toString().isEmpty()) {
+        if (stub.getStringState(toAccountKey).isEmpty()) {
             return newErrorResponse(String.format("Entity %s not found", toAccountKey));
         }
 
@@ -158,8 +158,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         }
         String key = args.get(0);
 
-        byte[] accountBytes = stub.getState(key);
-        if (accountBytes.toString().isEmpty()) {
+        if (stub.getStringState(key).isEmpty()) {
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
 
@@ -191,8 +190,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         }
 
         //Check the existence of accounts
-        byte[] accountBytes = stub.getState(AccountID);
-        if (accountBytes.toString().isEmpty()) {
+        if (!stub.getStringState(AccountID).isEmpty()) {
             return newErrorResponse(String.format("Error: %s exist", AccountID));
         }
 
@@ -214,11 +212,11 @@ public class AccountBasedChaincode extends ChaincodeBase {
         double balance = Double.parseDouble(args.get(2));
         String identity = args.get(3);
 
-        byte[] accountBytes = stub.getState(AccountID);
-        if (accountBytes.toString().isEmpty()) {
+        if (stub.getStringState(AccountID).isEmpty()) {
             return newErrorResponse(String.format("Error: state for %s is null", AccountID));
         }
 
+        byte[] accountBytes = stub.getState(AccountID);
         Account account = (Account)Utility.toObject(accountBytes);
 
         account.setElecAmount(elecAmount);
@@ -240,11 +238,12 @@ public class AccountBasedChaincode extends ChaincodeBase {
         }
         String key = args.get(0);
 
-        byte[] accountBytes = stub.getState(key);
-        if (accountBytes.toString().isEmpty()) {
+
+        if (stub.getStringState(key).isEmpty()) {
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
 
+        byte[] accountBytes = stub.getState(key);
         Account account = (Account)Utility.toObject(accountBytes);
 
         _logger.info(String.format("Query Response:\nName: %s, Amount: %f, Balance: %f, Identity: %s \n", key,
@@ -290,7 +289,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         }
         String key = args.get(0);
 
-        if (stub.getState(key).toString().isEmpty()){
+        if (stub.getStringState(key).isEmpty()){
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
 
@@ -330,10 +329,11 @@ public class AccountBasedChaincode extends ChaincodeBase {
         String key = args.get(0);
         String passwd = args.get(1);
 
-        byte[] accountBytes = stub.getState(key);
-        if (accountBytes.toString().isEmpty()) {
+        if (stub.getStringState(key).isEmpty()) {
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
+
+        byte[] accountBytes = stub.getState(key);
         Account account = (Account)Utility.toObject(accountBytes);
 
         account.setPassword(passwd);
@@ -350,10 +350,11 @@ public class AccountBasedChaincode extends ChaincodeBase {
         }
         String key = args.get(0);
 
-        byte[] accountBytes = stub.getState(key);
-        if (accountBytes.toString().isEmpty()) {
+        if (stub.getStringState(key).isEmpty()) {
             return newErrorResponse(String.format("Error: state for %s is null", key));
         }
+
+        byte[] accountBytes = stub.getState(key);
         Account account = (Account)Utility.toObject(accountBytes);
 
         String passwordString = account.getPassword();
