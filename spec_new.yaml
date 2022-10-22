@@ -1,0 +1,4 @@
+fabric:
+  peers: 
+  - "peer1.stateC.elec.com"
+  - "peer2.stateC.elec.com"
