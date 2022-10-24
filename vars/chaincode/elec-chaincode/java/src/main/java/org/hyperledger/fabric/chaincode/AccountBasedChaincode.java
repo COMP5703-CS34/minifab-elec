@@ -21,6 +21,8 @@ import org.hyperledger.fabric.shim.ledger.QueryResultsIterator;
 public class AccountBasedChaincode extends ChaincodeBase {
 
     private static Log _logger = LogFactory.getLog(AccountBasedChaincode.class);
+    private final byte[] FAIL_MESSAGE = new String("Fail").getBytes();
+    private final byte[] SUCCESS_MESSAGE = new String("Success").getBytes();
 
     @Override
     public Response init(ChaincodeStub stub) {
@@ -39,7 +41,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
             stub.putState("Admin", Utility.toByteArray(adminAccount));
 
-            return newSuccessResponse();
+            return newSuccessResponse("Init Success!", SUCCESS_MESSAGE);
         } catch (Throwable e) {
             return newErrorResponse(e);
         }
@@ -90,7 +92,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
     // electricity flows from accountFrom to accountTo
     private Response transfer(ChaincodeStub stub, List<String> args) {
         if (args.size() != 4) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 4");
+            return newErrorResponse("Incorrect number of arguments. Expecting 4", FAIL_MESSAGE);
         }
         // Parse parameters
         String fromAccountKey = args.get(0);
@@ -100,19 +102,19 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         byte[] fromAccountBytes = stub.getState(fromAccountKey);
         if (stub.getStringState(fromAccountKey).isEmpty()) {
-            return newErrorResponse(String.format("Entity %s not found", fromAccountKey));
+            return newErrorResponse(String.format("Entity %s not found", fromAccountKey), FAIL_MESSAGE);
         }
 
         byte[] toAccountBytes = stub.getState(toAccountKey);
         if (stub.getStringState(toAccountKey).isEmpty()) {
-            return newErrorResponse(String.format("Entity %s not found", toAccountKey));
+            return newErrorResponse(String.format("Entity %s not found", toAccountKey), FAIL_MESSAGE);
         }
 
         Account fromAccount = (Account)Utility.toObject(fromAccountBytes);
         Account toAccount = (Account)Utility.toObject(toAccountBytes);
 
         if (fromAccount.getIdentity().equals("Admin") || toAccount.getIdentity().equals("Admin")){
-            return newErrorResponse("Illegal identity");
+            return newErrorResponse("Illegal identity", FAIL_MESSAGE);
         }
 
         double fromAccountElecAmount = fromAccount.getElecAmount();
@@ -121,11 +123,11 @@ public class AccountBasedChaincode extends ChaincodeBase {
         double toAccountBalance = toAccount.getBalance();
 
         if (transferredAmount > fromAccountElecAmount) {
-            return newErrorResponse(String.format("not enough electricity in account %s", fromAccountKey));
+            return newErrorResponse(String.format("not enough electricity in account %s", fromAccountKey), FAIL_MESSAGE);
         }
 
         if (transferredAmount * elecPrice > toAccountBalance) {
-            return newErrorResponse(String.format("not enough money in account %s", toAccountKey));
+            return newErrorResponse(String.format("not enough money in account %s", toAccountKey), FAIL_MESSAGE);
         }
 
         fromAccountElecAmount -= transferredAmount;
@@ -146,32 +148,31 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         _logger.info("Transfer complete");
 
-        return newSuccessResponse("transfer finished successfully");
-        //, ByteString.copyFrom(fromAccountKey + ": " + accountFromValue + " " + accountToKey + ": " + accountToValue, UTF_8).toByteArray());
+        return newSuccessResponse("transfer finished successfully", SUCCESS_MESSAGE);
     }
 
     // Deletes an entity from state
     // Delete format: {deleteAccount}
     private Response delete(ChaincodeStub stub, List<String> args) {
         if (args.size() != 1) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 1");
+            return newErrorResponse("Incorrect number of arguments. Expecting 1", FAIL_MESSAGE);
         }
         String key = args.get(0);
 
         if (stub.getStringState(key).isEmpty()) {
-            return newErrorResponse(String.format("Error: state for %s is null", key));
+            return newErrorResponse(String.format("Error: state for %s is null", key), FAIL_MESSAGE);
         }
 
         // Delete the key from the state in ledger
         stub.delState(key);
-        return newSuccessResponse("Delete Success");
+        return newSuccessResponse("Delete Success", SUCCESS_MESSAGE);
     }
 
     // Add an entity from state
     // Add format: {AccountID, elecAmount, balance, password, identity, adminID}
     private Response add(ChaincodeStub stub, List<String> args) {
         if (args.size() != 6) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 6");
+            return newErrorResponse("Incorrect number of arguments. Expecting 6", FAIL_MESSAGE);
         }
         String AccountID = args.get(0);
         double elecAmount = Double.parseDouble(args.get(1));
@@ -186,25 +187,25 @@ public class AccountBasedChaincode extends ChaincodeBase {
         byte[] adminBytes = stub.getState(adminID);
         Account admin =  (Account)Utility.toObject(adminBytes);
         if (!admin.getIdentity().equals("Admin")) {
-            return newErrorResponse("Insufficient Permission");
+            return newErrorResponse("Insufficient Permission", FAIL_MESSAGE);
         }
 
         //Check the existence of accounts
         if (!stub.getStringState(AccountID).isEmpty()) {
-            return newErrorResponse(String.format("Error: %s exist", AccountID));
+            return newErrorResponse(String.format("Error: %s exist", AccountID), FAIL_MESSAGE);
         }
 
         // Add the key from the state in ledger
         stub.putState(AccountID, Utility.toByteArray(account));
         _logger.info(String.format("Add success! Name: %s, Amount: %f, Balance: %f, Password: %s", AccountID, elecAmount, balance, password));
-        return newSuccessResponse("Add success!");
+        return newSuccessResponse("Add success!", SUCCESS_MESSAGE);
     }
 
     // Update the information of users
     // Update formate: {AccountID, elecAmount, balance, identity}
     private Response update(ChaincodeStub stub, List<String> args) {
         if (args.size() != 4) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 4");
+            return newErrorResponse("Incorrect number of arguments. Expecting 4", FAIL_MESSAGE);
         }
 
         String AccountID = args.get(0);
@@ -213,7 +214,7 @@ public class AccountBasedChaincode extends ChaincodeBase {
         String identity = args.get(3);
 
         if (stub.getStringState(AccountID).isEmpty()) {
-            return newErrorResponse(String.format("Error: state for %s is null", AccountID));
+            return newErrorResponse(String.format("Error: state for %s is null", AccountID), FAIL_MESSAGE);
         }
 
         byte[] accountBytes = stub.getState(AccountID);
@@ -227,20 +228,20 @@ public class AccountBasedChaincode extends ChaincodeBase {
         stub.putState(AccountID, Utility.toByteArray(account));
         _logger.info(String.format("Update success! Name: %s, Amount: %f, Balance: %f, Identity: %s", AccountID, elecAmount, balance, identity));
 
-        return newSuccessResponse("Update success!");
+        return newSuccessResponse("Update success!", SUCCESS_MESSAGE);
     }
 
     // Query callback representing the query of a chaincode
     // Query format: {queryID}
     private Response query(ChaincodeStub stub, List<String> args) {
         if (args.size() != 1) {
-            return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query");
+            return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query", FAIL_MESSAGE);
         }
         String key = args.get(0);
 
 
         if (stub.getStringState(key).isEmpty()) {
-            return newErrorResponse(String.format("Error: state for %s is null", key));
+            return newErrorResponse(String.format("Error: state for %s is null", key), FAIL_MESSAGE);
         }
 
         byte[] accountBytes = stub.getState(key);
@@ -285,12 +286,12 @@ public class AccountBasedChaincode extends ChaincodeBase {
     private Response queryHistory(ChaincodeStub stub, List<String> args){
         // Check the number of arguments
         if (args.size() != 1){
-            return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query");
+            return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query", FAIL_MESSAGE);
         }
         String key = args.get(0);
 
         if (stub.getStringState(key).isEmpty()){
-            return newErrorResponse(String.format("Error: state for %s is null", key));
+            return newErrorResponse(String.format("Error: state for %s is null", key), FAIL_MESSAGE);
         }
 
         // Get history
@@ -324,13 +325,13 @@ public class AccountBasedChaincode extends ChaincodeBase {
     // Query history format: {queryID, passwd}
     private Response setPassword(ChaincodeStub stub, List<String> args) {
         if (args.size() != 2) {
-            return newErrorResponse("Incorrect number of arguments. Expecting 2 args");
+            return newErrorResponse("Incorrect number of arguments. Expecting 2 args", FAIL_MESSAGE);
         }
         String key = args.get(0);
         String passwd = args.get(1);
 
         if (stub.getStringState(key).isEmpty()) {
-            return newErrorResponse(String.format("Error: state for %s is null", key));
+            return newErrorResponse(String.format("Error: state for %s is null", key), FAIL_MESSAGE);
         }
 
         byte[] accountBytes = stub.getState(key);
@@ -340,18 +341,18 @@ public class AccountBasedChaincode extends ChaincodeBase {
 
         stub.putState(key, Utility.toByteArray(account));
 
-        _logger.info(String.format("Query Response:\nName: %s, password: %s\n", key, passwd));
-        return newSuccessResponse("Query Success");
+        _logger.info(String.format("Query Response:\nName: %s, new password: %s\n", key, passwd));
+        return newSuccessResponse("Set Password Success", SUCCESS_MESSAGE);
     }
 
     private Response getPassword(ChaincodeStub stub, List<String> args) {
         if (args.size() != 1) {
-            return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query");
+            return newErrorResponse("Incorrect number of arguments. Expecting name of the person to query", FAIL_MESSAGE);
         }
         String key = args.get(0);
 
         if (stub.getStringState(key).isEmpty()) {
-            return newErrorResponse(String.format("Error: state for %s is null", key));
+            return newErrorResponse(String.format("Error: state for %s is null", key), FAIL_MESSAGE);
         }
 
         byte[] accountBytes = stub.getState(key);
